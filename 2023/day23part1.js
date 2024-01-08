@@ -47,10 +47,11 @@ input
   });
 
 let disMap = {
-  [`${start.i},${start.j}`]: { i: start.i, j: start.j, dis: 0, from: "" },
+  [`${start.i},${start.j}`]: { i: start.i, j: start.j, dis: 0, from: {} },
 };
 let nodeCnt = Object.keys(map).length;
 for (let i = 0; i < nodeCnt; ++i) {
+  let updCnt = 0;
   for (const disNode of Object.values(disMap)) {
     const k = `${disNode.i},${disNode.j}`;
     const node = map[k];
@@ -65,24 +66,32 @@ for (let i = 0; i < nodeCnt; ++i) {
       }
       const [ni, nj] = [node.i + di, node.j + dj];
       const nk = `${ni},${nj}`;
-      if (!(nk in map) || nk === disNode.from) {
+      if (!(nk in map) || nk in disNode.from) {
         return;
       }
       const nNode = map[nk];
       if (nNode.type === "#") {
         return;
       }
-      const nDisNode = (disMap[nk] = disMap[nk] || {
-        i: ni,
-        j: nj,
-        dis: disNode.dis + 1,
-        from: k,
-      });
-      if (nDisNode.dis < disNode.dis + 1) {
+      const nDisNode = disMap[nk];
+      if (!nDisNode) {
+        disMap[nk] = {
+          i: ni,
+          j: nj,
+          dis: disNode.dis + 1,
+          from: { ...disNode.from, [k]: 1 },
+        };
+        updCnt++;
+      } else if (nDisNode.dis < disNode.dis + 1) {
         nDisNode.dis = disNode.dis + 1;
-        nDisNode.from = k;
+        nDisNode.from = { ...disNode.from, [k]: 1 };
+        updCnt++;
       }
     });
+  }
+  if (updCnt === 0) {
+    console.log(`no more update. ${i}/${nodeCnt}`);
+    break;
   }
 }
 console.log(disMap[`${end.i},${end.j}`].dis);
