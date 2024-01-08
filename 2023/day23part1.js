@@ -31,67 +31,50 @@ input
   .filter((v) => v)
   .forEach((r, i) => {
     for (let j = 0; j < r.length; ++j) {
+      if (r[j] === "#") {
+        continue;
+      }
+      const obj = {
+        i,
+        j,
+        type: r[j],
+      };
       if (r[j] === ".") {
         if (i === 0) {
           start = { i, j };
         }
         end = { i, j };
       }
-
-      map[`${i},${j}`] = {
-        i,
-        j,
-        type: r[j],
-      };
+      map[`${i},${j}`] = obj;
     }
   });
 
-let disMap = {
-  [`${start.i},${start.j}`]: { i: start.i, j: start.j, dis: 0, from: {} },
+let search = (end, pos, visited) => {
+  if (end.i === pos.i && end.j === pos.j) {
+    return 0;
+  }
+    const node = map[`${pos.i},${pos.j}`];
+  let max = -Infinity;
+  for (const [di, dj, dir] of [
+    [-1, 0, "^"],
+    [0, 1, ">"],
+    [1, 0, "v"],
+    [0, -1, "<"],
+  ]) {
+    if (node.type !== "." && node.type !== dir) {
+      continue;
+    }
+    const [ni, nj] = [pos.i + di, pos.j + dj];
+    const nk = `${ni},${nj}`;
+    if (!(nk in map) || nk in visited) {
+      continue;
+    }
+    const dis =
+      search(end, { i: ni, j: nj }, { ...visited, [`${pos.i},${pos.j}`]: 1 }) +
+      1;
+    max = Math.max(dis, max);
+  }
+  return max;
 };
-let nodeCnt = Object.keys(map).length;
-for (let i = 0; i < nodeCnt; ++i) {
-  let updCnt = 0;
-  for (const disNode of Object.values(disMap)) {
-    const k = `${disNode.i},${disNode.j}`;
-    const node = map[k];
-    [
-      [-1, 0, "^"],
-      [1, 0, "v"],
-      [0, -1, "<"],
-      [0, 1, ">"],
-    ].forEach(([di, dj, dir]) => {
-      if (node.type !== "." && node.type !== dir) {
-        return;
-      }
-      const [ni, nj] = [node.i + di, node.j + dj];
-      const nk = `${ni},${nj}`;
-      if (!(nk in map) || nk in disNode.from) {
-        return;
-      }
-      const nNode = map[nk];
-      if (nNode.type === "#") {
-        return;
-      }
-      const nDisNode = disMap[nk];
-      if (!nDisNode) {
-        disMap[nk] = {
-          i: ni,
-          j: nj,
-          dis: disNode.dis + 1,
-          from: { ...disNode.from, [k]: 1 },
-        };
-        updCnt++;
-      } else if (nDisNode.dis < disNode.dis + 1) {
-        nDisNode.dis = disNode.dis + 1;
-        nDisNode.from = { ...disNode.from, [k]: 1 };
-        updCnt++;
-      }
-    });
-  }
-  if (updCnt === 0) {
-    console.log(`no more update. ${i}/${nodeCnt}`);
-    break;
-  }
-}
-console.log(disMap[`${end.i},${end.j}`].dis);
+
+console.log(search(end, start, {}));
