@@ -49,32 +49,62 @@ input
     }
   });
 
-let search = (end, pos, visited) => {
-  if (end.i === pos.i && end.j === pos.j) {
-    return 0;
+let dirs = [
+  [-1, 0, "^"],
+  [0, 1, ">"],
+  [1, 0, "v"],
+  [0, -1, "<"],
+];
+let max = -Infinity;
+let tasks = [
+  {
+    i: start.i,
+    j: start.j,
+    dis: -Infinity,
+    children: [...dirs],
+  },
+];
+let lastChildDis = -Infinity;
+let visited = { [`${start.i},${start.j}`]: 1 };
+do {
+  const task = tasks[tasks.length - 1];
+  const k = `${task.i},${task.j}`;
+  if (task.i === end.i && task.j === end.j) {
+    tasks.pop();
+    delete visited[k];
+    lastChildDis = 0;
+    continue;
   }
-    const node = map[`${pos.i},${pos.j}`];
-  let max = -Infinity;
-  for (const [di, dj, dir] of [
-    [-1, 0, "^"],
-    [0, 1, ">"],
-    [1, 0, "v"],
-    [0, -1, "<"],
-  ]) {
+  if (task.dis < lastChildDis + 1) {
+    task.dis = lastChildDis + 1;
+  }
+  if (task.children.length <= 0) {
+    tasks.pop();
+    delete visited[k];
+    lastChildDis = task.dis;
+    continue;
+  }
+  const node = map[k];
+  lastChildDis = -Infinity;
+  do {
+    const [di, dj, dir] = task.children.pop();
     if (node.type !== "." && node.type !== dir) {
       continue;
     }
-    const [ni, nj] = [pos.i + di, pos.j + dj];
+    const [ni, nj] = [task.i + di, task.j + dj];
     const nk = `${ni},${nj}`;
     if (!(nk in map) || nk in visited) {
       continue;
     }
-    const dis =
-      search(end, { i: ni, j: nj }, { ...visited, [`${pos.i},${pos.j}`]: 1 }) +
-      1;
-    max = Math.max(dis, max);
-  }
-  return max;
-};
+    tasks.push({
+      i: ni,
+      j: nj,
+      dis: -Infinity,
+      children: [...dirs],
+    });
+    visited[nk] = 1;
+    break;
+  } while (task.children.length);
+} while (tasks.length);
 
-console.log(search(end, start, {}));
+console.log(lastChildDis);
