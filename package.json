@@ -1,0 +1,20 @@
+{
+  "name": "adventofcode",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "https://adventofcode.com/",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hiawui/adventofcode.git"
+  },
+  "author": "hiawui",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/hiawui/adventofcode/issues"
+  },
+  "homepage": "https://github.com/hiawui/adventofcode#readme"
+}

@@ -1,4 +1,4 @@
-class Heap {
+export class Heap {
   constructor(comp, keyFn) {
     this.buff = [];
     this.map = {};
